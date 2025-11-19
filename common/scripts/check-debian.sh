@@ -6,7 +6,7 @@ RK_TOOLS_DIR="${RK_TOOLS_DIR:-$(realpath "$RK_SCRIPTS_DIR/../tools")}"
 RK_DEBIAN_ARCH="${RK_DEBIAN_ARCH:-arm64}"
 RK_DEBIAN_VERSION="${RK_DEBIAN_VERSION:-bookworm}"
 
-SUPPORTED_VERSION=$(ls $RK_SDK_DIR/debian/ubuntu-build-service/ 2>&1 | \
+SUPPORTED_VERSION=$(ls $RK_SDK_DIR/$RK_DEBIAN_NUMBER/ubuntu-build-service/ 2>&1 | \
 	grep desktop-$RK_DEBIAN_ARCH | cut -d'-' -f1)
 
 if [ -z "$SUPPORTED_VERSION" ]; then

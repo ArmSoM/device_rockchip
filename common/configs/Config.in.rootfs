@@ -46,6 +46,56 @@ config RK_ROOTFS_INITRD
 	depends on RK_ROOTFS_EXT2 || RK_ROOTFS_SQUASHFS || RK_ROOTFS_ROMFS || \
 		RK_ROOTFS_CPIO || RK_ROOTFS_CPIO_GZ
 
+if RK_ROOTFS_SYSTEM="debian" || RK_ROOTFS_SYSTEM="ubuntu"
+
+config RK_ROOTFS_TARGET
+	string
+	default "gnome" if RK_ROOTFS_TARGET_GNOME
+	default "xfce" if RK_ROOTFS_TARGET_XFCE
+	default "server" if RK_ROOTFS_TARGET_SERVER
+
+choice
+	prompt "rootfs desktop environment"
+	help
+	  Choose the version of the desktop environment.
+
+config RK_ROOTFS_TARGET_GNOME
+	bool "gnome"
+
+config RK_ROOTFS_TARGET_XFCE
+	bool "xfce"
+
+config RK_ROOTFS_TARGET_SERVER
+	bool "server"
+
+endchoice
+
+config RK_ROOTFS_DEBUG
+	string
+	default "debug" if RK_ROOTFS_DEBUG_YES
+	default "none" if RK_ROOTFS_DEBUG_NO
+
+choice
+	prompt "rootfs debug mode"
+	help
+	  Choose add overlay-debug to rootfs.
+
+config RK_ROOTFS_DEBUG_YES
+	bool "debug"
+
+config RK_ROOTFS_DEBUG_NO
+	bool "none"
+
+endchoice
+
+config RK_ROOTFS_IMAGE
+	string "rootfs image name"
+	default "linaro-${RK_CHIP}-${RK_ROOTFS_TARGET}-rootfs.img" if RK_ROOTFS_SYSTEM_DEBIAN
+	default "ubuntu-${RK_CHIP}-${RK_ROOTFS_TARGET}-rootfs.img" if RK_ROOTFS_SYSTEM_UBUNTU
+	default ""
+
+endif
+
 config RK_ROOTFS_TYPE
 	string
 	default "ext2" if RK_ROOTFS_EXT2

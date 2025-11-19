@@ -91,9 +91,9 @@ do_build_extboot()
 	cp ${RK_SDK_DIR}/${RK_KERNEL_DTS_DIR}/uEnv/boot.cmd $EXTBOOT_DIR/
 	cp $EXTBOOT_DTB_DIR/${RK_KERNEL_DTS_NAME}.dtb $EXTBOOT_DIR/rk-kernel.dtb
 
-	# if [[ -e ${RK_SDK_DIR}/armsom-bin/initrd/$RK_KERNEL_ARCH/initrd-$KERNEL_MAIN_VER ]]; then
-	# 	cp -v ${RK_SDK_DIR}/armsom-bin/initrd/$RK_KERNEL_ARCH/initrd-$KERNEL_MAIN_VER $EXTBOOT_DIR/initrd-$KERNEL_MAIN_VER
-	# fi
+	if [[ -e ${RK_SDK_DIR}/armsom-initrd/initrd/$RK_KERNEL_ARCH/initrd-$KERNEL_MAIN_VER ]]; then
+		cp -v ${RK_SDK_DIR}/armsom-initrd/initrd/$RK_KERNEL_ARCH/initrd-$KERNEL_MAIN_VER $EXTBOOT_DIR/initrd-$KERNEL_MAIN_VER
+	fi
 
 	if [[ -e $EXTBOOT_DIR/boot.cmd ]]; then
 		mkimage -T script -C none -d $EXTBOOT_DIR/boot.cmd $EXTBOOT_DIR/boot.scr
@@ -156,10 +156,8 @@ do_build()
 			do_build_extboot
 			;;
 		kernel*)
-			echo "test RK_KERNEL_EXTBOOT: ${RK_KERNEL_EXTBOOT}"
 			if [ "$RK_KERNEL_EXTBOOT" = "y" ]; then
 				notice "build kerneldeb and extboot"
-				echo "test RK_ROOTFS_SYSTEM: ${RK_ROOTFS_SYSTEM}"
 				if [ $RK_ROOTFS_SYSTEM == "ubuntu" ] || [ $RK_ROOTFS_SYSTEM == "debian" ]; then
 					[ $KERNELDEB_NO_BUILD == "y" ] || do_build_kerneldeb
 				fi
