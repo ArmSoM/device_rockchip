@@ -83,7 +83,7 @@ do_build_extboot()
 	cp ${RK_SDK_DIR}/${RK_KERNEL_DTS_DIR}/uEnv/uEnv*.txt $EXTBOOT_DIR/uEnv
 	cp ${RK_SDK_DIR}/${RK_KERNEL_DTS_DIR}/uEnv/$UENV_DIR/*.txt $EXTBOOT_DIR/uEnv
 	sed -i "s/^uname_r=.*/uname_r=${KERNEL_VER}/" $EXTBOOT_DIR/uEnv/uEnv*.txt
-	# sed -i "/^uname_r=.*/a initrd=initrd-${KERNEL_MAIN_VER}" $EXTBOOT_DIR/uEnv/uEnv*.txt
+	sed -i "/^uname_r=.*/a initrd=initrd-${KERNEL_MAIN_VER}" $EXTBOOT_DIR/uEnv/uEnv*.txt
 	if [ $RK_ROOTFS_SYSTEM == "buildroot" ]; then
 		sed -i '/^cmdline=/s/console=tty1 *//g' $EXTBOOT_DIR/uEnv/uEnv*.txt
 	fi
