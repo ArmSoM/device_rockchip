@@ -1,39 +1,46 @@
-# Rockchip Linux SDK
+# Automatically build firmware
+```shell
+   ./build.sh chip
+```
+After selecting the configuration file, a pink prompt font will be used to indicate the kernel version used in the current configuration file
+One click compilation of u-Boot, kernel, Rootfs and packaging as an update.img image
+```shell
+   ~$ ./build.sh
+```
+The constructed image is saved in the `rockdev/` directory
 
-Rockchip Linux SDK for Rockchip SoC boards
-  - wiki <http://opensource.rock-chips.com/wiki_Main_Page>.
+# Build firmware step by step
+When developing firmware, it is recommended to use partition building and the functionality of building individual modules using SDK.
 
-## Quick Start
+Select SDK configuration file
+```shell
+   ~$ ./build.sh LubanCat_rk3588_debian_gnome_defconfig
+```
+## U-Boot construction
+```shell
+   ~$ ./build.sh uboot
+```
+## Kernel construction
+Boot partition kernel image, first generate kernel deb package, then compile the kernel and package the generated deb package into the boot partition.
+```shell
+   ~$ ./build.sh kernel
+```
+## Rootfs construction
+Building Debian
+```shell
+   ~$ ./build.sh debian
+```
+Building Ubuntu
+```shell
+   ~$ ./build.sh ubuntu
+```
 
-1. Check supported targets:
+## Image packaging
+Firmware packaging
 ```shell
-   ~$ make help
+./build.sh firmware
 ```
-2. Cleanup
+Generate update.img
 ```shell
-   ~$ make cleanall
+./build.sh updateimg
 ```
-. Choose SDK defconfig:
-```shell
-   ~$ make defconfig
-```
-4. Modify SDK configurations:
-```shell
-   ~$ make config
-```
-5. Modify kernel configurations:
-```shell
-   ~$ make kconfig
-```
-6. Modify partition table:
-```shell
-   ~$ make edit-parts
-```
-7. Modify the firmware packaging manifest file:
-```shell
-   ~$ make edit-package-file
-```
-8. Place custom rootfs files in `device/rockchip/common/overlays/rootfs/default`.
-9. Run `make` to build the images. Logs are saved in `output/log/latest`.
-10. Flash the generated `output/firmware/update.img` to your device.
-11. Boot your device and enjoy.
