@@ -14,7 +14,7 @@ When developing firmware, it is recommended to use partition building and the fu
 
 Select SDK configuration file
 ```shell
-   ~$ ./build.sh LubanCat_rk3588_debian_gnome_defconfig
+   ~$ ./build.sh armsom-sige7_rk3588_debian_xfce_linux6.1_defconfig
 ```
 ## U-Boot construction
 ```shell
