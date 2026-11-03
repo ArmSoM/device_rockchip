@@ -203,12 +203,29 @@ build_yocto()
 	finish_build build_yocto $@
 }
 
+# Use the userspace SoC independently of the selected board/defconfig name.
+rootfs_soc()
+{
+	case "${RK_ROOTFS_SOC:-$RK_CHIP}" in
+		rk3588s) echo rk3588 ;;
+		*) echo "${RK_ROOTFS_SOC:-$RK_CHIP}" ;;
+	esac
+}
+
 build_debian()
 {
 	check_config RK_DEBIAN || false
 
 	IMAGE_DIR="${1:-$RK_OUTDIR/debian}"
 	ARCH=${RK_DEBIAN_ARCH:-armhf}
+	local ROOTFS_SOC="$(rootfs_soc)"
+	local RK_ROOTFS_IMAGE="$RK_ROOTFS_IMAGE"
+
+	# Also handle existing .config files with the old default image name.
+	if [ "$ROOTFS_SOC" = rk3588 ] &&
+		[ "$RK_ROOTFS_IMAGE" = "linaro-rk3588s-$RK_ROOTFS_TARGET-rootfs.img" ]; then
+		RK_ROOTFS_IMAGE="linaro-rk3588-$RK_ROOTFS_TARGET-rootfs.img"
+	fi
 
 	"$RK_SCRIPTS_DIR/check-debian.sh"
 
@@ -238,7 +255,7 @@ build_debian()
 					./mk-base-debian.sh
 			fi
 		RELEASE=$RK_DEBIAN_VERSION TARGET=$RK_ROOTFS_TARGET VERSION=$RK_ROOTFS_DEBUG \
-		RK_ROOTFS_IMAGE=$RK_ROOTFS_IMAGE SOC=$RK_CHIP ARCH=$ARCH \
+		RK_ROOTFS_IMAGE=$RK_ROOTFS_IMAGE SOC=$ROOTFS_SOC ARCH=$ARCH \
 			./mk-rootfs.sh
 		ln -rsf "$PWD/$RK_ROOTFS_IMAGE" "$IMAGE_DIR/rootfs.ext4"
 	fi
@@ -252,6 +269,14 @@ build_ubuntu()
 
 	IMAGE_DIR="${1:-$RK_OUTDIR/ubuntu}"
 	ARCH=${RK_UBUNTU_ARCH:-armhf}
+	local ROOTFS_SOC="$(rootfs_soc)"
+	local RK_ROOTFS_IMAGE="$RK_ROOTFS_IMAGE"
+
+	# Also handle existing .config files with the old default image name.
+	if [ "$ROOTFS_SOC" = rk3588 ] &&
+		[ "$RK_ROOTFS_IMAGE" = "ubuntu-rk3588s-$RK_ROOTFS_TARGET-rootfs.img" ]; then
+		RK_ROOTFS_IMAGE="ubuntu-rk3588-$RK_ROOTFS_TARGET-rootfs.img"
+	fi
 
 	# "$RK_SCRIPTS_DIR/check-ubuntu.sh"
 
@@ -280,7 +305,7 @@ build_ubuntu()
 				TARGET=$RK_ROOTFS_TARGET ARCH=$ARCH ./mk-base-ubuntu.sh
 			fi
 		TARGET=$RK_ROOTFS_TARGET VERSION=$RK_ROOTFS_DEBUG \
-		RK_ROOTFS_IMAGE=$RK_ROOTFS_IMAGE SOC=$RK_CHIP ARCH=$ARCH \
+		RK_ROOTFS_IMAGE=$RK_ROOTFS_IMAGE SOC=$ROOTFS_SOC ARCH=$ARCH \
 			./mk-ubuntu-rootfs.sh
 		ln -rsf "$PWD/$RK_ROOTFS_IMAGE" "$IMAGE_DIR/rootfs.ext4"
 	fi

@@ -93,10 +93,17 @@ config RK_ROOTFS_DEBUG_NO
 
 endchoice
 
+# RK3588 and RK3588S share the same Debian/Ubuntu userspace images.
+# Keep RK_CHIP and defconfig names unchanged for board identification.
+config RK_ROOTFS_SOC
+	string
+	default "rk3588" if RK_CHIP = "rk3588s"
+	default RK_CHIP
+
 config RK_ROOTFS_IMAGE
 	string "rootfs image name"
-	default "linaro-${RK_CHIP}-${RK_ROOTFS_TARGET}-rootfs.img" if RK_ROOTFS_SYSTEM_DEBIAN
-	default "ubuntu-${RK_CHIP}-${RK_ROOTFS_TARGET}-rootfs.img" if RK_ROOTFS_SYSTEM_UBUNTU
+	default "linaro-${RK_ROOTFS_SOC}-${RK_ROOTFS_TARGET}-rootfs.img" if RK_ROOTFS_SYSTEM_DEBIAN
+	default "ubuntu-${RK_ROOTFS_SOC}-${RK_ROOTFS_TARGET}-rootfs.img" if RK_ROOTFS_SYSTEM_UBUNTU
 	default ""
 
 endif
