@@ -55,8 +55,18 @@ do_build_kerneldeb()
 
 do_build_extboot()
 {
-	run_command $KMAKE "$RK_KERNEL_DTS_NAME.img"
-	run_command $KMAKE dtbs
+	local packaged_kernel=""
+	if [ "$RK_ROOTFS_SYSTEM" = ubuntu ] || [ "$RK_ROOTFS_SYSTEM" = debian ]; then
+		local packages=("$RK_SDK_DIR"/linux-image-"$(cat "$RK_SDK_DIR/kernel/include/config/kernel.release")"_*.deb)
+		[ "${#packages[@]}" = 1 ] && [ -f "${packages[0]}" ] || fatal "Expected exactly one kernel image DEB"
+		packaged_kernel=${packages[0]}
+		local headers=${packaged_kernel/linux-image-/linux-headers-}
+		[ -f "$headers" ] || fatal "Matching kernel headers DEB missing"
+		[ "$(dpkg-deb -f "$headers" Version)" = "$(dpkg-deb -f "$packaged_kernel" Version)" ] || fatal "Kernel package versions differ"
+	else
+		run_command $KMAKE "$RK_KERNEL_DTS_NAME.img"
+		run_command $KMAKE dtbs
+	fi
 
 	KERNEL_VER=$(cat $RK_SDK_DIR/kernel/include/config/kernel.release)
 	KERNEL_MAIN_VER=$(echo "${KERNEL_VER}" | cut -d'.' -f1,2)
@@ -103,6 +113,14 @@ do_build_extboot()
 	cp ${RK_SDK_DIR}/kernel/System.map $EXTBOOT_DIR/System.map-$KERNEL_VER
 	cp ${RK_SDK_DIR}/kernel/logo_kernel.bmp $EXTBOOT_DIR/
 	cp ${RK_SDK_DIR}/kernel/logo.bmp $EXTBOOT_DIR/
+
+	if [ -n "$packaged_kernel" ]; then
+		# Extract only boot payload; never run target package hooks on the host.
+		rm -f "$EXTBOOT_DIR/Image-$KERNEL_VER"
+		dpkg-deb --fsys-tarfile "$packaged_kernel" | tar -xf - -C "$EXTBOOT_DIR" --strip-components=2 ./boot
+		[ -s "$EXTBOOT_DIR/Image-$KERNEL_VER" ] || fatal "Kernel DEB has no expected boot image"
+		cp "$EXTBOOT_DTB_DIR/${RK_KERNEL_DTS_NAME}.dtb" "$EXTBOOT_DIR/rk-kernel.dtb"
+	fi
 
 	if [ $RK_ROOTFS_SYSTEM == "ubuntu" ] || [ $RK_ROOTFS_SYSTEM == "debian" ]; then
 		cp ${RK_SDK_DIR}/linux-headers-"$KERNEL_VER"_"$KERNEL_VER"-*.deb $EXTBOOT_DIR/kerneldeb
