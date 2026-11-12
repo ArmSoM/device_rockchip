@@ -35,9 +35,43 @@ do_make_kernel_config()
 	run_command $KMAKE $KERNEL_CFG $BASIC_CFG_FRAGMENTS $KERNEL_CFG_FRAGMENTS
 }
 
+# Only the two maintained server images opt into a local display console.
+# Keep desktop and recovery kernel configurations on their existing paths.
+server_console_required()
+{
+	[ "${RK_ROOTFS_TARGET:-}" = server ] || return 1
+	case "${RK_ROOTFS_SYSTEM:-}" in
+		debian) [ "${RK_DEBIAN_NUMBER:-}" = debian12 ] ;;
+		ubuntu) [ "${RK_UBUNTU_NUMBER:-}" = ubuntu22.04 ] ;;
+		*) return 1 ;;
+	esac
+}
+
+check_server_console_config()
+{
+	local config=$1 option
+	for option in VT VT_CONSOLE FB DRM_FBDEV_EMULATION FRAMEBUFFER_CONSOLE; do
+		grep -qx "CONFIG_${option}=y" <<< "$config" || {
+			fatal "Server HDMI console requires CONFIG_${option}=y; rebuild the kernel DEB"
+			return 1
+		}
+	done
+}
+
 make_kernel_config()
 {
-	do_make_kernel_config "$RK_KERNEL_CFG" "$RK_KERNEL_CFG_FRAGMENTS"
+	do_make_kernel_config "$RK_KERNEL_CFG" "$RK_KERNEL_CFG_FRAGMENTS" || return 1
+	if server_console_required; then
+		run_command "$RK_SDK_DIR/kernel/scripts/config" \
+			--file "$RK_SDK_DIR/kernel/.config" \
+			--enable VT --enable VT_CONSOLE --enable FB \
+			--enable DRM_FBDEV_EMULATION --enable FRAMEBUFFER_CONSOLE \
+			--disable FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER || return 1
+		run_command $KMAKE olddefconfig || return 1
+		if [ -z "$DRY_RUN" ]; then
+			check_server_console_config "$(cat "$RK_SDK_DIR/kernel/.config")" || return 1
+		fi
+	fi
 }
 
 make_recovery_kernel_config()
@@ -70,6 +104,16 @@ do_build_extboot()
 
 	KERNEL_VER=$(cat $RK_SDK_DIR/kernel/include/config/kernel.release)
 	KERNEL_MAIN_VER=$(echo "${KERNEL_VER}" | cut -d'.' -f1,2)
+	if server_console_required; then
+		# A cached desktop DEB must not silently undo the server kernel config.
+		local packaged_config
+		packaged_config=$(set -o pipefail; dpkg-deb --fsys-tarfile "$packaged_kernel" |
+			tar -xOf - "./boot/config-$KERNEL_VER") || {
+			fatal "Cannot read server kernel package config; rebuild the kernel DEB"
+			return 1
+		}
+		check_server_console_config "$packaged_config" || return 1
+	fi
 	EXTBOOT_IMG=${RK_SDK_DIR}/kernel/extboot.img
 	EXTBOOT_DIR=${RK_SDK_DIR}/kernel/extboot
 	EXTBOOT_DTB_DIR=${EXTBOOT_DIR}/dtb/
