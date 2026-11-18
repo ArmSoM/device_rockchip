@@ -1,7 +1,7 @@
 # RK_BUILDROOT is not set
-RK_DEBIAN_BULLSEYE=y
+RK_DEBIAN_BOOKWORM=y
 RK_ROOTFS_TARGET_SERVER=y
-RK_KERNEL_PREFERRED="5.10"
+RK_KERNEL_PREFERRED="6.1"
 RK_KERNEL_CFG="armsom_linux_rk3528_defconfig"
 RK_KERNEL_DTS_NAME="rk3528-armsom-sige1"
 RK_KERNEL_EXTBOOT=y
@@ -11,3 +11,4 @@ RK_PARAMETER="parameter-extboot.txt"
 RK_USE_FIT_IMG=y
 RK_PACKAGE_FILE_CUSTOM=y
 RK_PACKAGE_FILE="package-file-extboot"
+RK_ROOTFS_IMAGE="linaro-rk3528-sige1-6.1-server-rootfs.img"
