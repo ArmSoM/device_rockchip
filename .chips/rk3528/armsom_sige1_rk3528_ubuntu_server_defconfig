@@ -16,4 +16,3 @@ RK_PARAMETER="parameter-extboot.txt"
 RK_USE_FIT_IMG=y
 RK_PACKAGE_FILE_CUSTOM=y
 RK_PACKAGE_FILE="package-file-extboot"
-RK_ROOTFS_IMAGE="ubuntu-rk3528-sige1-6.1-server-rootfs.img"
